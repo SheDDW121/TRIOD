@@ -1,0 +1,11 @@
+LOAD data/seattle-weather.csv
+LOAD data/testset.csv
+LOAD data/weather.csv
+LOAD data/weather_prediction_dataset.csv
+
+GET 01-01-2000
+GET 01-01-2012
+GET 31-12-2017
+GET ABSURD
+GET 2000-01-01
+
