@@ -43,14 +43,14 @@ class StorageManager:
         self.connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
         self.channel = self.connection.channel()
 
-        self.channel.queue_declare(queue='manager_responses', durable=durability)
-        self.channel.queue_declare(queue='manager_commands', durable=durability)
-        self.channel.queue_declare(queue='client_responses', durable=durability)
+        self.channel.queue_declare(queue='manager_responses', durable=durability) # Очередь для ответов хранителей и реплик (просматриваем менеджером)
+        self.channel.queue_declare(queue='manager_commands', durable=durability) # Очередь для запросов клиентов (просматриваем менеджером)
+        self.channel.queue_declare(queue='client_responses', durable=durability) # Очередь для публикации ответов менеджера клиенту (отправляем менеджером, просматриваем клиентом)
 
         # Создаем очереди для хранителей
         for i in range(num_storages):
             queue_name = f"storage-{i}"
-            self.channel.queue_declare(queue=queue_name, durable=durability)
+            self.channel.queue_declare(queue=queue_name, durable=durability) # Очередь для отправки хранителям запросов (отправляем менеджером, просматриваем хранителями)
 
     def get_storage(self, date):
         """Определяет, какой хранитель должен хранить дату"""
@@ -64,51 +64,6 @@ class StorageManager:
             exchange='', routing_key=f'storage-{storage_node}', body=json.dumps(request)
         )
         print(f"[Manager] Запрос GET {date} -> storage_{storage_node}")
-
-    # def listen_responses(self, timeout=2):
-        # """Ожидает ответов от хранителей в течение заданного времени (секунды)."""
-        # print(f"[Manager] Ожидание ответов от хранителей в течение {timeout} секунд...")
-
-        # responses = []
-
-        # def callback(ch, method, properties, body):
-        #     response = json.loads(body)
-        #     print(f"[Manager] Получен ответ: {response}")
-        #     responses.append(response)
-
-        #     # Отправляем ответ клиенту
-        #     self.channel.basic_publish(
-        #         exchange='',
-        #         routing_key='client_responses',
-        #         body=json.dumps(response)
-        #     )
-
-        #     # self.channel.basic_cancel('manager_responses')
-
-        # # Подписываемся на очередь ответов
-        # self.channel.basic_consume(queue='manager_responses', on_message_callback=callback, auto_ack=True)
-
-        # # Ждем ответы в течение timeout секунд
-        # start_time = time.time()
-        # while time.time() - start_time < timeout:
-        #     self.connection.process_data_events(time_limit=0.5)  # Проверяем очередь сообщений
-
-        # # Отписываемся от очереди после тайм-аута
-        # self.channel.basic_cancel('manager_responses')
-
-        # print("[Manager] Завершено ожидание ответов.")
-        # return responses
-
-
-    # def listen_responses(self): # блокирующий consume
-    #     """Ожидает ответов от хранителей"""
-    #     def callback(ch, method, properties, body):
-    #         response = json.loads(body)
-    #         print(f"[Manager] Получен ответ: {response}")
-        
-    #     self.channel.basic_consume(queue='manager_responses', on_message_callback=callback, auto_ack=True)
-    #     print("[Manager] Ожидание ответов от хранителей...")
-    #     self.channel.start_consuming()
 
     def load_data(self, file_path):
         """
@@ -175,7 +130,6 @@ class StorageManager:
                 
             date = command[1]
             self.send_get_request(date)
-            # self.listen_responses()
 
             response = {"status": "OK", "message": f"Запрос GET {date} отправлен"}
 
@@ -192,7 +146,6 @@ class StorageManager:
     def on_storage_message(self, ch, method, properties, body):
         response = json.loads(body)
         print(f"[Manager] Получен ответ: {response}")
-        # responses.append(response)
         
         # Отправляем ответ клиенту
         self.channel.basic_publish(
@@ -201,52 +154,12 @@ class StorageManager:
             body=json.dumps(response)
         )
 
-        # self.channel.basic_cancel('manager_responses')
-
         # Подписываемся на очередь ответов
     def start(self):
         print("[Менеджер] Ожидание команд от клиента...")
         self.channel.basic_consume(queue='manager_commands', on_message_callback=self.on_client_command, auto_ack=True)
         self.channel.basic_consume(queue='manager_responses', on_message_callback=self.on_storage_message, auto_ack=True)
         self.channel.start_consuming()
-
-    # def start(self):
-    #     """
-    #     Ожидает команд от пользователя (LOAD, GET).
-    #     """
-    #     print("[Менеджер] Ожидание команд...")
-    #     while True:
-    #         command = input("> ").strip().split()
-
-    #         if not command:
-    #             continue
-            
-    #         cmd = command[0].upper()
-
-    #         if cmd == "LOAD":
-    #             if len(command) < 2:
-    #                 print("[Ошибка] Использование: LOAD [имя файла]")
-    #                 continue
-    #             file_name = command[1]
-    #             self.load_data(file_name)
-
-    #         elif cmd == "GET":
-    #             if len(command) < 2:
-    #                 print("[Ошибка] Использование: GET [дата]")
-    #                 continue
-    #             date = command[1]
-    #             self.send_get_request(date)
-    #             self.listen_responses()
-
-    #         elif cmd == "EXIT":
-    #             print("[Менеджер] Завершение работы.")
-    #             break
-
-    #         else:
-    #             print("[Ошибка] Неизвестная команда. Доступные команды: LOAD [файл], GET [дата], EXIT.")
-
-    #     self.connection.close()
-
     
 
 if __name__ == "__main__":

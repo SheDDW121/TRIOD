@@ -7,7 +7,7 @@ from config import num_storages, num_vnodes, print_each_step, durability
 class ReplicaNode:
     def __init__(self, storage_id):
         self.storage_id = storage_id
-        self.data = {}  # Хранилище данных (ключ - дата, значение - записи)
+        self.data = {}  # Хранилище данных (ключ - дата, значение - список записей)
 
         # Подключение к RabbitMQ
         self.connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
@@ -53,12 +53,3 @@ class ReplicaNode:
     def start(self):
         print(f"[Реплика-{self.storage_id}] Запущена и ждет запросы...")
         self.channel.start_consuming()
-
-# if __name__ == "__main__":
-#     if len(sys.argv) < 2:
-#         print("Использование: python replica_node.py [storage_id]")
-#         sys.exit(1)
-    
-    # storage_id = int(sys.argv[1])
-    # replica = ReplicaNode(storage_id)
-    # replica.start()

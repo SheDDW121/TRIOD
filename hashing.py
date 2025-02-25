@@ -31,8 +31,8 @@ class ConsistentHashing:
             bisect.insort(self.sorted_keys, hashed_key)
 
             # vnode_index = storage_id * self.virtual_nodes + i  # Уникальный индекс для виртуального узла
-            # hashed_key = self._get_virtual_hash(vnode_index)   # Равномерный хеш
-            # self.ring[hashed_key] = storage_id
+            # hashed_key = self._get_virtual_hash(vnode_index)   # Равномерный хеш, но этот способ пока не используем
+            # self.ring[hashed_key] = storage_id                 # Так как тогда при добавлении новых будет неравномерно и все пересчитывать не хочется
             # bisect.insort(self.sorted_keys, hashed_key)
 
     def get_storage(self, key):

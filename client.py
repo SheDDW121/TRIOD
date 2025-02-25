@@ -9,8 +9,8 @@ def send_command(command):
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     channel = connection.channel()
     
-    channel.queue_declare(queue='manager_commands', durable=durability)
-    channel.queue_declare(queue='client_responses', durable=durability)
+    channel.queue_declare(queue='manager_commands', durable=durability) # Очередь для запросов клиентов (просматриваем менеджером)
+    channel.queue_declare(queue='client_responses', durable=durability) # Очередь для просмотров ответа менеджера (просматриваем клиентом)
     
     request = {'command': command, 'reply_to': 'client_responses'}
     channel.basic_publish(exchange='', routing_key='manager_commands', body=json.dumps(request))
@@ -27,7 +27,7 @@ def listen_responses():
     def callback(ch, method, properties, body):
         response = json.loads(body)
         print(f"[Клиент] Получен ответ: {response}")
-        print("\r> ", end="", flush=True)  # Это вернёт курсор в начало строки
+        print("\r> ", end="", flush=True)  # Курсор в начало строки
     
     channel.basic_consume(queue='client_responses', on_message_callback=callback, auto_ack=True)
     # print("[Клиент] Ожидание ответов...")
