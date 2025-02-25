@@ -29,7 +29,7 @@
         python ./client.py
    ```
    
-Далее команды jnghfd клиент. Примеры команд:
+Далее команды осуществляет клиент. Примеры команд:
   ```bash
     LOAD data/seattle-weather.csv
     LOAD data/testset.csv
