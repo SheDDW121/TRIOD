@@ -3,7 +3,7 @@ import pika
 import json
 import time
 
-from config import num_storages, num_vnodes, print_each_step, durability
+from config import num_storages, print_each_step, durability
 
 def send_command(command):
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
@@ -26,7 +26,13 @@ def listen_responses():
     
     def callback(ch, method, properties, body):
         response = json.loads(body)
-        print(f"[Клиент] Получен ответ: {response}")
+
+        if 'node_id' in response and 'queue_name' in response:
+            print(f"[Клиент] Получен ответ от менеджера. Данные получены от хранителя с id = {response['node_id']} (queue_name = {response['queue_name']}): {response['data']}")
+
+        else:
+            print(f"[Клиент] Получен ответ от менеджера: {response}")
+
         print("\r> ", end="", flush=True)  # Курсор в начало строки
     
     channel.basic_consume(queue='client_responses', on_message_callback=callback, auto_ack=True)
@@ -45,7 +51,7 @@ if __name__ == "__main__":
     listener_thread = threading.Thread(target=listen_responses, daemon=True)
     listener_thread.start()
     
-    print("[Клиент] Введите команды: LOAD [файл], GET [дата], EXIT")
+    print("[Клиент] Введите команды: LOAD [файл], GET [дата], KILL [nodeID], EXIT")
     while True:
         command = input("> ").strip()
         if command.upper() == "EXIT":
