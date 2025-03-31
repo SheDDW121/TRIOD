@@ -59,6 +59,8 @@ class StorageManager:
 
         self.channel.queue_declare(queue='manager_pings', durable=durability) # Очередь для ответов хранителей на команду PING (просматриваем менеджером)
 
+        self.channel.queue_declare(queue='showcase_data', durable=durability) # Очередь для передачи данных на процесс-витрину
+
         # Создаем очереди для хранителей
         for i in range(num_storages):
             queue_name = f"storage-{i}"
@@ -209,6 +211,13 @@ class StorageManager:
                 
                 load_request = {'command': 'LOAD', 'data': row.to_dict()}
                 self.channel.basic_publish(exchange='', routing_key=queue_name, body=json.dumps(load_request))
+
+                # отправляем в очередь витрины
+                self.channel.basic_publish(
+                    exchange='',
+                    routing_key='showcase_data',
+                    body=json.dumps(load_request)
+                )
 
                 if print_each_step:
                     print(f"[Менеджер] Отправил данные {row} в {queue_name}")
