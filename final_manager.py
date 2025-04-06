@@ -212,12 +212,12 @@ class StorageManager:
                 load_request = {'command': 'LOAD', 'data': row.to_dict()}
                 self.channel.basic_publish(exchange='', routing_key=queue_name, body=json.dumps(load_request))
 
-                # отправляем в очередь витрины
-                self.channel.basic_publish(
-                    exchange='',
-                    routing_key='showcase_data',
-                    body=json.dumps(load_request)
-                )
+                # # отправляем в очередь витрины
+                # self.channel.basic_publish(
+                #     exchange='',
+                #     routing_key='showcase_data',
+                #     body=json.dumps(load_request)
+                # )
 
                 if print_each_step:
                     print(f"[Менеджер] Отправил данные {row} в {queue_name}")

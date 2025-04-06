@@ -1,4 +1,4 @@
-num_storages = 5
+num_storages = 6
 # num_vnodes = 1
 print_each_step = False
 durability = False

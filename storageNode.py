@@ -25,6 +25,8 @@ class StorageNode:
         self.channel.queue_declare(queue='manager_responses', durable=durability) # Очередь для ответов хранителей и реплик (просматриваем менеджером)
         self.channel.queue_declare(queue='manager_pings', durable=durability) # Очередь для ответов хранителей на команду PING (просматриваем менеджером)
 
+        self.channel.queue_declare(queue='showcase_data', durable=durability) # Очередь для передачи данных на процесс-витрину
+
         self.channel.basic_consume(queue=self.queue_name, on_message_callback=self.handle_request, auto_ack=True)
 
         print(f"[Хранитель-{self.node_id}] Запущен и ожидает запросов...")
@@ -47,10 +49,20 @@ class StorageNode:
                 if print_each_step:
                     print(f"[Хранитель-{self.node_id}] Получил и сохранил данные за {date}: {row}")
 
+                load_request = {'command': 'LOAD', 'data': row}
+
                 # Отправляем данные в реплику
                 self.channel.basic_publish(
                     exchange='', routing_key=self.replica_queue, 
-                    body=json.dumps({'command': 'COPY', 'data': row})
+                    body=json.dumps(load_request)
+                )
+
+
+                # Отправляем данные также в очередь витрины
+                self.channel.basic_publish(
+                    exchange='',
+                    routing_key='showcase_data',
+                    body=json.dumps(load_request)
                 )
 
                 if print_each_step:

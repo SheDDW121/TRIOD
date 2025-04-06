@@ -31,7 +31,7 @@ class ReplicaNode:
 
             request = json.loads(body)
             command = request['command']
-            if command == 'COPY':
+            if command == 'LOAD':
                 row = request['data']
                 date = row['date_parsed']
                 if date not in self.data:

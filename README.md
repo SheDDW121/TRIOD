@@ -90,7 +90,7 @@
 ## Витрина
 Запускается отдельным процессом и классом, вместе с командой LOAD получает данные от менеджера и далее преобразует их в указанных вид.
 
-Пример связки команд для тестирования работы витрины:
+Пример связки команд для тестирования работы витрины (6 хранителей):
 
 ```bash
     temp_range 01-01-2012 11-01-2012 (будет написано, что витрина пустая)
@@ -106,12 +106,18 @@
     temp_range 19-12-2015 31-12-2015 (данные тоже изменятся)
     temp_range_avg 19-12-2015 31-12-2015 (ответ - 12.462)
 
+    KILL 2
+    KILL 3
+    KILL 4
+    KILL 5
+
     LOAD data/weather.csv
     temp_range 03-12-2016 10-01-2017
     temp_range_avg 03-12-2016 10-01-2017 (19.616)
 
     temp_range_avg 01-01-2012 11-01-2012 (12.47)
-    LOAD data/seattle-weather.csv (11.778)
+    LOAD data/seattle-weather.csv
+    temp_range_avg 01-01-2012 11-01-2012 (11.778)
     LOAD data/seattle-weather.csv
     LOAD data/seattle-weather.csv
     LOAD data/seattle-weather.csv

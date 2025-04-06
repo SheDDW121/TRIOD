@@ -22,7 +22,7 @@ def send_command_to_showcase(command, date1, date2):
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     channel = connection.channel()
     
-    channel.queue_declare(queue='showcase_requests', durable=durability) # Очередь для передачи данных на процесс-витрину
+    channel.queue_declare(queue='showcase_requests', durable=durability) # Очередь для передачи запросов на процесс-витрину (от клиента)
     channel.queue_declare(queue='client_responses', durable=durability) # Очередь для просмотров ответа менеджера и витрины (просматриваем клиентом)
 
     # Формируем JSON-объект с полями: command, date1, date2
